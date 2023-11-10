@@ -20,7 +20,7 @@ jobs:
       SELECTIVE_API_KEY: ${{ secrets.SELECTIVE_API_KEY }}
       SELECTIVE_RUN_ID: ${{ github.run_id }}
       SELECTIVE_RUN_ATTEMPT: ${{ github.run_attempt }}
-      PR_TITLE: ${{ github.event.pull_request.title }}
+      SELECTIVE_PR_TITLE: ${{ github.event.pull_request.title }}
       SELECTIVE_RUNNER_ID: ${{ matrix.ci_node_index }}
       CLONE_PAT: ${{ secrets.CLONE_PAT }}
 
