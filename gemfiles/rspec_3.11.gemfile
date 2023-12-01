@@ -9,5 +9,6 @@ gem "standard", "~> 1.19.1"
 gem "irb"
 gem "rspec_junit_formatter"
 gem "appraisal", "~> 2.5"
+gem "selective-ruby-core", git: "https://github.com/selectiveci/selective-ruby-core.git"
 
 gemspec path: "../"
