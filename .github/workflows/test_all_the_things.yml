@@ -37,9 +37,6 @@ jobs:
           ruby-version: "${{ matrix.ruby }}"
           bundler-cache: true
 
-      - name: Download Transport
-        run: bin/get_transport
-
       - name: Setup Selective
         uses: selectiveci/setup-selective@v1
         with:
