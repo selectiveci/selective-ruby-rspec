@@ -41,7 +41,7 @@ jobs:
         uses: selectiveci/setup-selective@v1
         with:
           api-key: ${{ secrets.SELECTIVE_API_KEY }}
-          runner-id: ${{ matrix.ruby }}-${{ matrix.gemfiles }}-${{ matrix.runners }}
+          runner-id: ${{ matrix.runners }}
 
       - name: Run the default task
         env:
