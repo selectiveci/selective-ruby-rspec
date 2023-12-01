@@ -5,7 +5,8 @@ module Selective
         MAP = {
           "BaseTextFormatter" => [:message, :dump_pending, :seed, :close],
           "ProgressFormatter" => [:start_dump],
-          "DocumentationFormatter" => [:message]
+          "DocumentationFormatter" => [:message],
+          "ProfileFormatter" => [:dump_profile]
         }
 
         MAP.each do |module_name, methods|
