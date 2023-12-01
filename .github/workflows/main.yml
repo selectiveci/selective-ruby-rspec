@@ -16,22 +16,21 @@ jobs:
       matrix:
         ci_node_total: [4]
         ci_node_index: [0, 1, 2, 3]
-    env:
-      SELECTIVE_API_KEY: ${{ secrets.SELECTIVE_API_KEY }}
-      SELECTIVE_RUN_ID: ${{ github.run_id }}
-      SELECTIVE_RUN_ATTEMPT: ${{ github.run_attempt }}
-      SELECTIVE_PR_TITLE: ${{ github.event.pull_request.title }}
-      SELECTIVE_RUNNER_ID: ${{ matrix.ci_node_index }}
-      CLONE_PAT: ${{ secrets.CLONE_PAT }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.2.2"
           bundler-cache: true
+
+      - name: Setup Selective
+        uses: selectiveci/setup-selective@v1
+        with:
+          api-key: ${{ secrets.SELECTIVE_API_KEY }}
+          runner-id: ${{ matrix.ci_node_index }}
 
       - name: Run the default task
         run: bundle exec selective rspec

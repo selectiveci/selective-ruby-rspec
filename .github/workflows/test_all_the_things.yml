@@ -26,17 +26,10 @@ jobs:
         runners: [1, 2]
 
     env:
-      SELECTIVE_API_KEY: ${{ secrets.SELECTIVE_API_KEY }}
       BUNDLE_GEMFILE: ${{ matrix.gemfiles }}
-      SELECTIVE_HOST: wss://app.selective.ci
-      SELECTIVE_RUN_ID: ${{ github.run_id }}-${{ matrix.ruby }}-${{ matrix.gemfiles }}
-      SELECTIVE_RUN_ATTEMPT: ${{ github.run_attempt }}
-      SELECTIVE_PR_TITLE: ${{ github.event.pull_request.title }}
-      SELECTIVE_RUNNER_ID: ${{ matrix.ruby }}-${{ matrix.gemfiles }}-${{ matrix.runners }}
-      CLONE_PAT: ${{ secrets.CLONE_PAT }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -44,8 +37,13 @@ jobs:
           ruby-version: "${{ matrix.ruby }}"
           bundler-cache: true
 
-      - name: Download Transport
-        run: bin/get_transport
+      - name: Setup Selective
+        uses: selectiveci/setup-selective@v1
+        with:
+          api-key: ${{ secrets.SELECTIVE_API_KEY }}
+          runner-id: ${{ matrix.runners }}
 
       - name: Run the default task
+        env:
+          SELECTIVE_RUN_ID: ${{ github.run_id }}-${{ matrix.ruby }}-${{ matrix.gemfiles }}
         run: bundle exec selective rspec
