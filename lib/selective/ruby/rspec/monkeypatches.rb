@@ -106,7 +106,7 @@ module Selective
         module Example
           def initialize(*args)
             super
-            ::RSpec.world.example_map[id] = example_group
+            ::RSpec.world.example_map[id] = example_group.parent_groups.last
           end
 
           def run(*args)
