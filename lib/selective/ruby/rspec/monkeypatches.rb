@@ -68,6 +68,26 @@ module Selective
           def get_files_to_run(*args)
             super.reject { |f| loaded_spec_files.member?(f) }
           end
+
+          def with_suite_hooks
+            return yield if dry_run?
+
+            unless @before_suite_hooks_run
+              ::RSpec.current_scope = :before_suite_hook
+              run_suite_hooks("a `before(:suite)` hook", @before_suite_hooks)
+              @before_suite_hooks_run = true
+            end
+
+            yield
+          end
+
+          def after_suite_hooks
+            return if dry_run?
+
+            ::RSpec.current_scope = :after_suite_hook
+            run_suite_hooks("an `after(:suite)` hook", @after_suite_hooks)
+            ::RSpec.current_scope = :suite
+          end
         end
 
         module World

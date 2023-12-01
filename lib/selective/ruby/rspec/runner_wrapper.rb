@@ -76,6 +76,7 @@ module Selective
         end
 
         def finish
+          rspec_runner.configuration.after_suite_hooks
           ::RSpec.world.reporter.finish
         end
 
