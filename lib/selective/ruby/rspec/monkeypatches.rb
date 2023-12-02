@@ -68,6 +68,26 @@ module Selective
           def get_files_to_run(*args)
             super.reject { |f| loaded_spec_files.member?(f) }
           end
+
+          def with_suite_hooks
+            return yield if dry_run?
+
+            unless @before_suite_hooks_run
+              ::RSpec.current_scope = :before_suite_hook
+              run_suite_hooks("a `before(:suite)` hook", @before_suite_hooks)
+              @before_suite_hooks_run = true
+            end
+
+            yield
+          end
+
+          def after_suite_hooks
+            return if dry_run?
+
+            ::RSpec.current_scope = :after_suite_hook
+            run_suite_hooks("an `after(:suite)` hook", @after_suite_hooks)
+            ::RSpec.current_scope = :suite
+          end
         end
 
         module World
@@ -86,7 +106,7 @@ module Selective
         module Example
           def initialize(*args)
             super
-            ::RSpec.world.example_map[id] = example_group
+            ::RSpec.world.example_map[id] = example_group.parent_groups.last
           end
 
           def run(*args)
@@ -109,6 +129,16 @@ module Selective
           end
         end
 
+        module RSpec
+          unless ::RSpec.respond_to?(:current_scope)
+            def current_scope=(scope)
+              # No-op! Older versions of RSpec don't have this method.
+              # so we're adding it here if it's not defined since our
+              # monkeypatching references it.
+            end
+          end
+        end
+
         def self.apply
           ::RSpec::Support.require_rspec_core("formatters/base_text_formatter")
 
@@ -118,12 +148,13 @@ module Selective
               .prepend(Selective::Ruby::RSpec::Monkeypatches.const_get(module_name))
           end
 
-          ::RSpec::Core::Reporter.prepend(Selective::Ruby::RSpec::Monkeypatches::Reporter)
-          ::RSpec::Core::Configuration.prepend(Selective::Ruby::RSpec::Monkeypatches::Configuration)
-          ::RSpec::Core::World.prepend(Selective::Ruby::RSpec::Monkeypatches::World)
-          ::RSpec::Core::Runner.prepend(Selective::Ruby::RSpec::Monkeypatches::Runner)
-          ::RSpec::Core::Example.prepend(Selective::Ruby::RSpec::Monkeypatches::Example)
-          ::RSpec::Core::Metadata::HashPopulator.prepend(Selective::Ruby::RSpec::Monkeypatches::MetaHashPopulator)
+          ::RSpec.singleton_class.prepend(RSpec)
+          ::RSpec::Core::Reporter.prepend(Reporter)
+          ::RSpec::Core::Configuration.prepend(Configuration)
+          ::RSpec::Core::World.prepend(World)
+          ::RSpec::Core::Runner.prepend(Runner)
+          ::RSpec::Core::Example.prepend(Example)
+          ::RSpec::Core::Metadata::HashPopulator.prepend(MetaHashPopulator)
         end
       end
     end
