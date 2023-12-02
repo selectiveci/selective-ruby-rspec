@@ -129,6 +129,16 @@ module Selective
           end
         end
 
+        module RSpec
+          unless ::RSpec.respond_to?(:current_scope)
+            def current_scope=(scope)
+              # No-op! Older versions of RSpec don't have this method.
+              # so we're adding it here if it's not defined since our
+              # monkeypatching references it.
+            end
+          end
+        end
+
         def self.apply
           ::RSpec::Support.require_rspec_core("formatters/base_text_formatter")
 
@@ -138,12 +148,13 @@ module Selective
               .prepend(Selective::Ruby::RSpec::Monkeypatches.const_get(module_name))
           end
 
-          ::RSpec::Core::Reporter.prepend(Selective::Ruby::RSpec::Monkeypatches::Reporter)
-          ::RSpec::Core::Configuration.prepend(Selective::Ruby::RSpec::Monkeypatches::Configuration)
-          ::RSpec::Core::World.prepend(Selective::Ruby::RSpec::Monkeypatches::World)
-          ::RSpec::Core::Runner.prepend(Selective::Ruby::RSpec::Monkeypatches::Runner)
-          ::RSpec::Core::Example.prepend(Selective::Ruby::RSpec::Monkeypatches::Example)
-          ::RSpec::Core::Metadata::HashPopulator.prepend(Selective::Ruby::RSpec::Monkeypatches::MetaHashPopulator)
+          ::RSpec.singleton_class.prepend(RSpec)
+          ::RSpec::Core::Reporter.prepend(Reporter)
+          ::RSpec::Core::Configuration.prepend(Configuration)
+          ::RSpec::Core::World.prepend(World)
+          ::RSpec::Core::Runner.prepend(Runner)
+          ::RSpec::Core::Example.prepend(Example)
+          ::RSpec::Core::Metadata::HashPopulator.prepend(MetaHashPopulator)
         end
       end
     end
