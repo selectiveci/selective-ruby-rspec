@@ -139,6 +139,17 @@ module Selective
           end
         end
 
+        module Hooks
+          hooks = %i(before prepend_before after append_after)
+
+          hooks.each do |hook|
+            define_method(hook) do |*args, &block|
+              args = args.map { |a| a == :all ? :each : a }
+              super(*args, &block)
+            end
+          end
+        end
+
         def self.apply
           ::RSpec::Support.require_rspec_core("formatters/base_text_formatter")
 
@@ -149,6 +160,7 @@ module Selective
           end
 
           ::RSpec.singleton_class.prepend(RSpec)
+          ::RSpec::Core::Hooks.prepend(Hooks)
           ::RSpec::Core::Reporter.prepend(Reporter)
           ::RSpec::Core::Configuration.prepend(Configuration)
           ::RSpec::Core::World.prepend(World)
