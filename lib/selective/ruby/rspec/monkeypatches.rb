@@ -159,8 +159,13 @@ module Selective
               .prepend(Selective::Ruby::RSpec::Monkeypatches.const_get(module_name))
           end
 
+          # We'd like to prepend to ::RSpec::Core::Hooks here but there is
+          # a bug in < Ruby 3.0 that prevents us from doing so. Instead,
+          # we extend the ExampleGroup class which is where the Hooks module
+          # is included.
+          ::RSpec::Core::ExampleGroup.extend(Hooks)
+
           ::RSpec.singleton_class.prepend(RSpec)
-          ::RSpec::Core::Hooks.prepend(Hooks)
           ::RSpec::Core::Reporter.prepend(Reporter)
           ::RSpec::Core::Configuration.prepend(Configuration)
           ::RSpec::Core::World.prepend(World)
