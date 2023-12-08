@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.1.3] - 2023-12-08
+
+- Bugfix for zeitwerk when eager loading is enabled
+
 ## [0.1.2] - 2023-12-01
 
 - Support before/after all hooks (as before/after each hooks)
