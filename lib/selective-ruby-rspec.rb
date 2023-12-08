@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "zeitwerk"
+require "rspec/core"
 
 loader = Zeitwerk::Loader.for_gem(warn_on_extra_files: false)
 loader.inflector.inflect("rspec" => "RSpec")
