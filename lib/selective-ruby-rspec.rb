@@ -6,6 +6,7 @@ require "rspec/core"
 loader = Zeitwerk::Loader.for_gem(warn_on_extra_files: false)
 loader.inflector.inflect("rspec" => "RSpec")
 loader.ignore("#{__dir__}/selective-ruby-rspec.rb")
+loader.ignore("#{__dir__}/selective/ruby/rspec/version.rb")
 loader.setup
 
 require "selective-ruby-core"
