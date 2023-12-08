@@ -12,8 +12,6 @@ module Selective
         DEFAULT_SPEC_PATH = "./spec"
 
         def initialize(args)
-          require "rspec/core"
-
           Selective::Ruby::RSpec::Monkeypatches.apply
           apply_rspec_configuration
 
