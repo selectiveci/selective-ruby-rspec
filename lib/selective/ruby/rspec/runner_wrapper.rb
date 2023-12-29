@@ -7,24 +7,39 @@ module Selective
       class RunnerWrapper
         class TestManifestError < StandardError; end
 
-        attr_reader :args, :rspec_runner, :config
+        attr_reader :rspec_runner, :config
 
         DEFAULT_SPEC_PATH = "./spec"
 
         def initialize(args)
-          Selective::Ruby::RSpec::Monkeypatches.apply
+          rspec_args, wrapper_config_hash = parse_args(args)
+          Selective::Ruby::RSpec::Monkeypatches.apply(wrapper_config_hash)
           apply_rspec_configuration
 
-          args << "--format=progress" unless args.any? { |e| e.start_with?("--format") }
-          @args = args
-
-          @config = ::RSpec::Core::ConfigurationOptions.new(args)
+          @config = ::RSpec::Core::ConfigurationOptions.new(rspec_args)
           if config.options[:files_or_directories_to_run].empty?
             config.options[:files_or_directories_to_run] = [DEFAULT_SPEC_PATH]
           end
 
           @rspec_runner = ::RSpec::Core::Runner.new(@config)
           @rspec_runner.setup($stderr, $stdout)
+        end
+
+        def parse_args(args)
+          supported_wrapper_args = %w[--require-each-hooks]
+          wrapper_args, rspec_args = args.partition do |arg|
+            supported_wrapper_args.any? do |p|
+              arg.start_with?(p)
+            end
+          end
+
+          wrapper_config_hash = wrapper_args.each_with_object({}) do |arg, hash|
+            key = arg.sub('--', '').tr('-', '_').to_sym
+            hash[key] = true
+          end
+
+          rspec_args << "--format=progress" unless args.any? { |e| e.start_with?("--format") }
+          [rspec_args, wrapper_config_hash]
         end
 
         def manifest
