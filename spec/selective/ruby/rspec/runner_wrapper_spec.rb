@@ -74,4 +74,22 @@ RSpec.describe Selective::Ruby::RSpec::RunnerWrapper do
       expect(runner_wrapper.failure_formatter(meta_example).keys).to include(:failure_message_lines, :failure_formatted_backtrace)
     end
   end
+
+  describe '#framework' do
+    it 'returns the expected value' do
+      expect(runner_wrapper.framework).to eq('rspec')
+    end
+  end
+
+  describe '#framework_version' do
+    it 'returns the current rspec core version' do
+      expect(runner_wrapper.framework_version).to eq(::RSpec::Core::Version::STRING)
+    end
+  end
+
+  describe '#wrapper_version' do
+    it 'returns gem version' do
+      expect(runner_wrapper.wrapper_version).to eq(Selective::Ruby::RSpec::VERSION)
+    end
+  end
 end

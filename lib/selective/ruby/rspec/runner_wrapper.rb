@@ -9,6 +9,7 @@ module Selective
 
         attr_reader :args, :rspec_runner, :config
 
+        FRAMEWORK = "rspec"
         DEFAULT_SPEC_PATH = "./spec"
 
         def initialize(args)
@@ -76,6 +77,18 @@ module Selective
         def finish
           rspec_runner.configuration.after_suite_hooks
           ::RSpec.world.reporter.finish
+        end
+
+        def framework
+          RunnerWrapper::FRAMEWORK
+        end
+
+        def framework_version
+          ::RSpec::Core::Version::STRING
+        end
+
+        def wrapper_version
+          RSpec::VERSION
         end
 
         private
