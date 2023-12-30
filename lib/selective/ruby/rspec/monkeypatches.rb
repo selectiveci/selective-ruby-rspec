@@ -139,10 +139,10 @@ module Selective
           end
         end
 
-        module Hooks
-          hooks = %i(before prepend_before after append_after)
 
-          hooks.each do |hook|
+        HOOKS = %i(before prepend_before after append_after)
+        module Hooks
+          HOOKS.each do |hook|
             define_method(hook) do |*args, &block|
               args = args.map { |a| a == :all ? :each : a }
               super(*args, &block)
@@ -150,7 +150,21 @@ module Selective
           end
         end
 
-        def self.apply
+        module RequireEachHooks
+          HOOKS.each do |hook|
+            define_method(hook) do |*args, &block|
+              if args.none? { |a| a == :all}
+                super(*args, &block)
+              else
+                super(*args) do
+                  raise "Before :all hooks are not supported when using --require-each-hooks. Please use before(:each) instead."
+                end
+              end
+            end
+          end
+        end
+
+        def self.apply(config)
           ::RSpec::Support.require_rspec_core("formatters/base_text_formatter")
 
           MAP.each do |module_name, _methods|
@@ -163,7 +177,11 @@ module Selective
           # a bug in < Ruby 3.0 that prevents us from doing so. Instead,
           # we extend the ExampleGroup class which is where the Hooks module
           # is included.
-          ::RSpec::Core::ExampleGroup.extend(Hooks)
+          if config[:require_each_hooks]
+            ::RSpec::Core::ExampleGroup.extend(RequireEachHooks)
+          else
+            ::RSpec::Core::ExampleGroup.extend(Hooks)
+          end
 
           ::RSpec.singleton_class.prepend(RSpec)
           ::RSpec::Core::Reporter.prepend(Reporter)
