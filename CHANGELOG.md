@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+## [0.1.4] - 2024-01-03
+
+- Upgrade to Ruby 3.3
+- Support collection of metadata (framework, version, etc)
+- Support option allowing users to disable before/after :all hooks (--require-each-hooks)
+
 ## [0.1.3] - 2023-12-08
 
 - Bugfix for zeitwerk when eager loading is enabled
