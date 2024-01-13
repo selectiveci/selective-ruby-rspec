@@ -1,0 +1,19 @@
+version: v1.0
+name: Ruby
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu2004
+blocks:
+  - name: Run RSpec tests
+    task:
+      jobs:
+        - name: Run RSpec tests
+          parallelism: 2
+          commands:
+            - sem-version ruby 3.3.0
+            - checkout
+            - bundle install
+            - bundle exec selective rspec
+      secrets:
+        - name: Selective
