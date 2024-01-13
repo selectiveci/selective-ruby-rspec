@@ -1,12 +1,16 @@
 # Selective RSpec Runner
 
-Selective is an intelligent test runner built to run in your current CI with a goal of shortening the feedback cycle to the first failure. It does queue-based test splitting using prioritized tests from code changes and time.
+Selective is an intelligent test runner that shortens the feedback cycle on CI. Tests are evenly distributed across parallel runners by a queue-based system. When available, the PR changeset is used to intelligently order tests such that those likely to fail are run first. Results are streamed to a Dashboard where the combined results from all parallel runners/nodes can be viewed in real time.
+
+Selective is currently in Alpha. If you'd like to try it out, please email alpha@selecive.ci.
 
 ## Basic Setup
 
-Our goal for Selective is to make it as easy as possible to setup in your CI environment with minimal changes to your workflows/pipelines.
+Selective is easy to set up in your CI environment and requires minimal configuration changes.
 
-We have created an Action for GitHub Actions and an Orb for CircleCI to assist with setup. All other CI providers will [require additional setup](#other-ci-providers).
+While we support all CI providers, there are several listed below that have first-class support. We're adding more providers to the list as we go. Please [let us know](#need-help) what providers you'd like to see next.
+
+If your CI provider is not listed, you can [set the required environment variables](#other-ci-providers) manually.
 
 ## Setup Steps
 
@@ -41,6 +45,8 @@ We have created an Action for GitHub Actions and an Orb for CircleCI to assist w
 
 [View a full/working example](https://github.com/selectiveci/selective-ruby-rspec/blob/main/.circleci/config.yml)
 
+Ensure you have set an environment variable with your API key (`SELECTIVE_API_KEY`) in your [project](https://circleci.com/docs/set-environment-variable/#set-an-environment-variable-in-a-project) or [context](https://circleci.com/docs/set-environment-variable/#set-an-environment-variable-in-a-context).
+
 ```yaml
 # CircleCI Orb Example
 - setup-selective/init:
@@ -48,6 +54,12 @@ We have created an Action for GitHub Actions and an Orb for CircleCI to assist w
     run_id: << pipeline.id >>
     target_branch: main
 ```
+
+### Semaphore
+
+[View a full/working example](https://github.com/selectiveci/selective-ruby-rspec/blob/main/.semaphore/semaphore.yml)
+
+[Create a secret](https://docs.semaphoreci.com/essentials/using-secrets/) with your API key (`SELECTIVE_API_KEY`). Semaphore does not require any additional setup.
 
 ### Other CI Providers
 
