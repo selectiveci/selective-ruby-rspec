@@ -8,10 +8,11 @@ blocks:
   - name: Run RSpec tests
     task:
       jobs:
-        - name: bundle install
+        - name: Run RSpec tests
+          parallelism: 2
           commands:
-            - checkout
             - sem-version ruby 3.3.0
+            - checkout
             - bundle install
             - bundle exec selective rspec
       secrets:
