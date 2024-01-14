@@ -16,7 +16,7 @@ If your CI provider is not listed, you can [set the required environment variabl
 
 1. Install the gem for your testing framework: `bundle add selective-ruby-rspec`
 
-   > 💡 In case of an error Unable to find executable for <platform>. Check your `Gemfile.lock` to see if the platform is listed in `PLATFORMS` sections. If not, run `bundle lock --add-platform <platform>`.
+   > 💡 In case of an error Unable to find executable for \<platform\>. Check your `Gemfile.lock` to see if the platform is listed in `PLATFORMS` sections. If not, run `bundle lock --add-platform <platform>`.
    > Currently support platforms:
    >
    > - arm64-darwin
