@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 RSpec.describe Selective::Ruby::RSpec::RunnerWrapper do
-  let(:runner_wrapper) { dirty_dirty_unprivate_class(described_class).new(args) }
+  let(:runner_wrapper) { dirty_dirty_unprivate_class(described_class).new(args, example_callback) }
+  let(:example_callback) { ->(example) {} }
   let(:rspec_runner) { instance_double(::RSpec::Core::Runner, setup: nil) }
   let(:args) { [] }
 
@@ -11,8 +12,26 @@ RSpec.describe Selective::Ruby::RSpec::RunnerWrapper do
 
   before do
     allow(Selective::Ruby::RSpec::Monkeypatches).to receive(:apply)
+    allow(Selective::Ruby::RSpec::Formatter).to receive(:callback=)
     allow(::RSpec).to receive(:configure)
     allow(::RSpec::Core::Runner).to receive(:new).and_return(rspec_runner)
+    allow(runner_wrapper).to receive(:ensure_formatter)
+  end
+
+  describe '.initialize' do
+    before { runner_wrapper }
+    
+    it 'applies monkeypatches' do
+      expect(Selective::Ruby::RSpec::Monkeypatches).to have_received(:apply)
+    end
+
+    it 'sets the example_callback' do
+      expect(runner_wrapper.example_callback).to eq(example_callback)
+    end
+
+    it 'sets the formatter callback' do
+      expect(Selective::Ruby::RSpec::Formatter).to have_received(:callback=).with(Method)
+    end
   end
 
   describe "#manifest" do

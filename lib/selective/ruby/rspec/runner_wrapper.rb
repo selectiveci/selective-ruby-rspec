@@ -7,12 +7,13 @@ module Selective
       class RunnerWrapper
         class TestManifestError < StandardError; end
 
-        attr_reader :rspec_runner, :config
+        attr_reader :rspec_runner, :config, :example_callback
 
         FRAMEWORK = "rspec"
         DEFAULT_SPEC_PATH = "./spec"
 
-        def initialize(args)
+        def initialize(args, example_callback)
+          @example_callback = example_callback
           rspec_args, wrapper_config_hash = parse_args(args)
           Selective::Ruby::RSpec::Monkeypatches.apply(wrapper_config_hash)
           apply_rspec_configuration
@@ -21,6 +22,8 @@ module Selective
           if config.options[:files_or_directories_to_run].empty?
             config.options[:files_or_directories_to_run] = [DEFAULT_SPEC_PATH]
           end
+
+          Formatter.callback = method(:report_example)
 
           @rspec_runner = ::RSpec::Core::Runner.new(@config)
           @rspec_runner.setup($stderr, $stdout)
@@ -59,12 +62,22 @@ module Selective
           raise_test_manifest_error(e.message)
         end
 
-        def run_test_cases(test_case_ids, callback)
+        def run_test_cases(test_case_ids)
           ::RSpec.world.reporter.send(:start, nil)
           Selective::Ruby::Core::Controller.suppress_reporting!
-          test_case_ids.flatten.each do |test_case_id|
-            run_test_case(test_case_id, callback)
+
+          ::RSpec.configuration.reset_filters
+          ::RSpec.world.prepare_example_filtering
+          config.options[:files_or_directories_to_run] = test_case_ids
+          ensure_formatter
+
+          rspec_runner.setup($stderr, $stdout)
+
+          example_groups = test_case_ids.each_with_object(Set.new) do |test_case_id, set|
+            set << ::RSpec.world.example_map[test_case_id]
           end
+
+          rspec_runner.run_specs(example_groups.to_a)
         end
 
         def exec
@@ -108,18 +121,6 @@ module Selective
 
         private
 
-        def run_test_case(test_case_id, callback)
-          ::RSpec.configuration.reset_filters
-          ::RSpec.world.prepare_example_filtering
-          config.options[:files_or_directories_to_run] = test_case_id
-          rspec_runner.options = config
-          rspec_runner.setup($stderr, $stdout)
-
-          # $rspec_rerun_debug = true if test_case == './spec/selective_spec.rb[1:2]' && ::RSpec.world.reporter.examples.length == 5
-          rspec_runner.run_specs([::RSpec.world.example_map[test_case_id]])
-          callback.call(format_example(get_example_from_reporter(test_case_id)))
-        end
-
         def get_example_from_reporter(test_case_id)
           ::RSpec.world.reporter.examples.detect { |e| e.id == test_case_id }
         end
@@ -151,6 +152,10 @@ module Selective
           }
         end
 
+        def report_example(example)
+          example_callback.call(format_example(example))
+        end
+
         def apply_rspec_configuration
           ::RSpec.configure do |config|
             config.backtrace_exclusion_patterns = config.backtrace_exclusion_patterns | [/lib\/selective/]
@@ -160,6 +165,13 @@ module Selective
 
         def raise_test_manifest_error(output)
           raise TestManifestError.new("Selective could not generate a test manifest. The output was:\n#{output}")
+        end
+
+        def ensure_formatter
+          formatter = [Selective::Ruby::RSpec::Formatter.to_s]
+          return if config.options[:formatters].include?(formatter)
+
+          config.options[:formatters] << formatter
         end
       end
     end
