@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.1.5] - 2024-01-26
+
+- Give batches of tests to RSpec. Significantly reduce overhead/improve performance
+
 ## [0.1.4] - 2024-01-03
 
 - Upgrade to Ruby 3.3
