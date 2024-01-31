@@ -15,7 +15,7 @@ RSpec.describe Selective::Ruby::RSpec::RunnerWrapper do
     allow(Selective::Ruby::RSpec::Formatter).to receive(:callback=)
     allow(::RSpec).to receive(:configure)
     allow(::RSpec::Core::Runner).to receive(:new).and_return(rspec_runner)
-    allow(runner_wrapper).to receive(:ensure_formatter)
+    allow(runner_wrapper).to receive(:apply_formatter)
   end
 
   describe '.initialize' do

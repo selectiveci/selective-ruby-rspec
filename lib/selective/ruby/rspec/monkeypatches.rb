@@ -97,6 +97,16 @@ module Selective
             super
             @example_map = {}
           end
+
+          def prepare_example_filtering
+            @filtered_examples = Hash.new do |hash, group|
+              hash[group] = if ::RSpec.configuration.dry_run?
+                filter_manager.prune(group.examples)
+              else
+                []
+              end
+            end
+          end
         end
 
         module Runner
@@ -106,7 +116,7 @@ module Selective
         module Example
           def initialize(*args)
             super
-            ::RSpec.world.example_map[id] = example_group.parent_groups.last
+            ::RSpec.world.example_map[id] = self
           end
 
           def run(*args)
