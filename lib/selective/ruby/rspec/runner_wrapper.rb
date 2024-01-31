@@ -29,23 +29,6 @@ module Selective
           @rspec_runner.setup($stderr, $stdout)
         end
 
-        def parse_args(args)
-          supported_wrapper_args = %w[--require-each-hooks]
-          wrapper_args, rspec_args = args.partition do |arg|
-            supported_wrapper_args.any? do |p|
-              arg.start_with?(p)
-            end
-          end
-
-          wrapper_config_hash = wrapper_args.each_with_object({}) do |arg, hash|
-            key = arg.sub('--', '').tr('-', '_').to_sym
-            hash[key] = true
-          end
-
-          rspec_args << "--format=progress" unless args.any? { |e| e.start_with?("--format") }
-          [rspec_args, wrapper_config_hash]
-        end
-
         def manifest
           output = nil
           Tempfile.create("selective-rspec-dry-run") do |f|
@@ -63,21 +46,9 @@ module Selective
         end
 
         def run_test_cases(test_case_ids)
-          ::RSpec.world.reporter.send(:start, nil)
-          Selective::Ruby::Core::Controller.suppress_reporting!
-
-          ::RSpec.configuration.reset_filters
-          ::RSpec.world.prepare_example_filtering
-          config.options[:files_or_directories_to_run] = test_case_ids
-          ensure_formatter
-
-          rspec_runner.setup($stderr, $stdout)
-
-          example_groups = test_case_ids.each_with_object(Set.new) do |test_case_id, set|
-            set << ::RSpec.world.example_map[test_case_id]
-          end
-
-          rspec_runner.run_specs(example_groups.to_a)
+          ensure_test_phase
+          configure(test_case_ids)
+          rspec_runner.run_specs(optimize_test_filtering(test_case_ids).to_a)
         end
 
         def exec
@@ -120,6 +91,23 @@ module Selective
         end
 
         private
+
+        def parse_args(args)
+          supported_wrapper_args = %w[--require-each-hooks]
+          wrapper_args, rspec_args = args.partition do |arg|
+            supported_wrapper_args.any? do |p|
+              arg.start_with?(p)
+            end
+          end
+
+          wrapper_config_hash = wrapper_args.each_with_object({}) do |arg, hash|
+            key = arg.sub('--', '').tr('-', '_').to_sym
+            hash[key] = true
+          end
+
+          rspec_args << "--format=progress" unless args.any? { |e| e.start_with?("--format") }
+          [rspec_args, wrapper_config_hash]
+        end
 
         def get_example_from_reporter(test_case_id)
           ::RSpec.world.reporter.examples.detect { |e| e.id == test_case_id }
@@ -167,11 +155,39 @@ module Selective
           raise TestManifestError.new("Selective could not generate a test manifest. The output was:\n#{output}")
         end
 
-        def ensure_formatter
-          formatter = [Selective::Ruby::RSpec::Formatter.to_s]
-          return if config.options[:formatters].include?(formatter)
+        def configure(test_case_ids)
+          ::RSpec.configuration.reset_filters
+          ::RSpec.world.filtered_examples.clear
 
-          config.options[:formatters] << formatter
+          config.options[:files_or_directories_to_run] = test_case_ids
+          rspec_runner.configure($stderr, $stdout)
+          ::RSpec.configuration.load_spec_files
+        end
+
+        def optimize_test_filtering(test_case_ids)
+          # The following is an optimization to avoid RSpec's usual filtering mechanism
+          # which has a significant performance overhead.
+          test_case_ids.each_with_object(Set.new) do |test_case_id, set|
+            example = ::RSpec.world.example_map[test_case_id]
+            if ::RSpec.world.filtered_examples.key?(example.example_group)
+              ::RSpec.world.filtered_examples[example.example_group] << example
+            else
+              ::RSpec.world.filtered_examples[example.example_group] = [example]
+            end
+            set << example.example_group.parent_groups.last
+          end
+        end
+
+        def ensure_test_phase
+          @test_phase_initialized ||= begin
+            ::RSpec.world.reporter.send(:start, nil)
+            Selective::Ruby::Core::Controller.suppress_reporting!
+            apply_formatter
+          end
+        end
+
+        def apply_formatter
+          config.options[:formatters] << [Selective::Ruby::RSpec::Formatter.to_s]
         end
       end
     end
