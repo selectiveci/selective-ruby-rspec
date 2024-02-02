@@ -1,3 +1,5 @@
+require 'benchmark'
+
 module Selective
   module Ruby
     module RSpec
@@ -154,8 +156,20 @@ module Selective
         module Hooks
           HOOKS.each do |hook|
             define_method(hook) do |*args, &block|
-              args = args.map { |a| a == :all ? :each : a }
-              super(*args, &block)
+              if args.any? { |a| a == :all}
+                args = args.map { |a| a == :all ? :each : a }
+                super(*args, &->(example) {
+                  Benchmark.measure { example.instance_exec(example, &block) }.tap do |time|
+                    Selective::Ruby::Core::Controller.report_at_finish.tap do |report_at_finish|
+                      key = :"seconds_in_#{hook}_all_hooks"
+                      report_at_finish[key] ||= 0
+                      report_at_finish[key] += time.real
+                    end
+                  end
+                })
+              else
+                super(*args, &block)
+              end
             end
           end
         end
