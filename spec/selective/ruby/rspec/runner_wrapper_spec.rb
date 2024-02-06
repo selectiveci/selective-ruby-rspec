@@ -12,7 +12,7 @@ RSpec.describe Selective::Ruby::RSpec::RunnerWrapper do
 
   before do
     allow(Selective::Ruby::RSpec::Monkeypatches).to receive(:apply)
-    allow(Selective::Ruby::RSpec::Formatter).to receive(:callback=)
+    allow(Selective::Ruby::RSpec::Formatter).to receive(:runner_wrapper=)
     allow(::RSpec).to receive(:configure)
     allow(::RSpec::Core::Runner).to receive(:new).and_return(rspec_runner)
     allow(runner_wrapper).to receive(:apply_formatter)
@@ -30,7 +30,7 @@ RSpec.describe Selective::Ruby::RSpec::RunnerWrapper do
     end
 
     it 'sets the formatter callback' do
-      expect(Selective::Ruby::RSpec::Formatter).to have_received(:callback=).with(Method)
+      expect(Selective::Ruby::RSpec::Formatter).to have_received(:runner_wrapper=).with(runner_wrapper)
     end
   end
 
@@ -79,11 +79,11 @@ RSpec.describe Selective::Ruby::RSpec::RunnerWrapper do
     end
   end
 
-  describe "#remove_failed_test_case_result" do
+  describe "#remove_test_case_result" do
     it "removes failed test cases" do
       ::RSpec.world.reporter.failed_examples << meta_example
       ::RSpec.world.reporter.examples << meta_example
-      runner_wrapper.remove_failed_test_case_result(meta_example.id)
+      runner_wrapper.remove_test_case_result(meta_example.id)
     end
   end
 

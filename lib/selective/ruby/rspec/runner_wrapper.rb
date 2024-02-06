@@ -23,7 +23,7 @@ module Selective
             config.options[:files_or_directories_to_run] = [DEFAULT_SPEC_PATH]
           end
 
-          Formatter.callback = method(:report_example)
+          Formatter.runner_wrapper = self
 
           @rspec_runner = ::RSpec::Core::Runner.new(@config)
           @rspec_runner.setup($stderr, $stdout)
@@ -55,7 +55,7 @@ module Selective
           rspec_runner.run($stderr, $stdout)
         end
 
-        def remove_failed_test_case_result(test_case_id)
+        def remove_test_case_result(test_case_id)
           failure = ::RSpec.world.reporter.failed_examples.detect { |e| e.id == test_case_id }
           if (failed_example_index = ::RSpec.world.reporter.failed_examples.index(failure))
             ::RSpec.world.reporter.failed_examples.delete_at(failed_example_index)
@@ -88,6 +88,10 @@ module Selective
 
         def wrapper_version
           RSpec::VERSION
+        end
+
+        def report_example(example)
+          example_callback.call(format_example(example))
         end
 
         private
@@ -140,10 +144,6 @@ module Selective
           }
         end
 
-        def report_example(example)
-          example_callback.call(format_example(example))
-        end
-
         def apply_rspec_configuration
           ::RSpec.configure do |config|
             config.backtrace_exclusion_patterns = config.backtrace_exclusion_patterns | [/lib\/selective/]
@@ -156,6 +156,7 @@ module Selective
         end
 
         def configure(test_case_ids)
+          ::RSpec.world.wants_to_quit = false
           ::RSpec.configuration.reset_filters
           ::RSpec.world.filtered_examples.clear
 

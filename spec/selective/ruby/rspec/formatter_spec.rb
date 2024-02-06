@@ -6,18 +6,18 @@ RSpec.describe Selective::Ruby::RSpec::Formatter do
   let(:formatter) { TestClass.new(nil) }
   let(:example) { double('example') }
   let(:notification) { double('notification', example: example) }
-  let(:callback) { double }
+  let(:runner_wrapper) { double }
 
   %i(example_passed example_failed example_pending).each do |method|
     describe "##{method}" do
       before do
-        TestClass.callback = callback
-        allow(callback).to receive(:call)
+        TestClass.runner_wrapper = runner_wrapper
+        allow(runner_wrapper).to receive(:report_example)
         formatter.send(method, notification)
       end
 
       it 'calls the callback with the notification example' do
-        expect(callback).to have_received(:call).with(notification.example)
+        expect(runner_wrapper).to have_received(:report_example).with(notification.example)
       end
     end
   end
