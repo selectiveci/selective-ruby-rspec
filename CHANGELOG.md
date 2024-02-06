@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+## [0.1.6] - 2024-02-06
+
+- RSpec test filtering performance optimization
+- Fix bug causing test failures on websocket reconnect
+
 ## [0.1.5] - 2024-01-26
 
 - Give batches of tests to RSpec. Significantly reduce overhead/improve performance
