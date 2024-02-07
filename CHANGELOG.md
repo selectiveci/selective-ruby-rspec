@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.1.7] - 2024-02-07
+
+- Fix retry when connection lost
+
 ## [0.1.6] - 2024-02-06
 
 - RSpec test filtering performance optimization
