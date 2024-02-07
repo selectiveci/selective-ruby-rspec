@@ -8,6 +8,7 @@ module Selective
         class TestManifestError < StandardError; end
 
         attr_reader :rspec_runner, :config, :example_callback
+        attr_accessor :connection_lost
 
         FRAMEWORK = "rspec"
         DEFAULT_SPEC_PATH = "./spec"
@@ -49,6 +50,10 @@ module Selective
           ensure_test_phase
           configure(test_case_ids)
           rspec_runner.run_specs(optimize_test_filtering(test_case_ids).to_a)
+          if connection_lost
+            self.connection_lost = false
+            raise Selective::Ruby::Core::ConnectionLostError
+          end
         end
 
         def exec
