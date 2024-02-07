@@ -19,6 +19,7 @@ module Selective
             self.class.runner_wrapper.report_example(notification.example)
           rescue Selective::Ruby::Core::ConnectionLostError
             ::RSpec.world.wants_to_quit = true
+            self.class.runner_wrapper.connection_lost = true
             self.class.runner_wrapper.remove_test_case_result(notification.example.id)
           end
         end
