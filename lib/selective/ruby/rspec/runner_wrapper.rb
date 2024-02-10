@@ -75,7 +75,7 @@ module Selective
         end
 
         def exit_status
-          ::RSpec.world.reporter.failed_examples.any? ? 1 : 0
+          rspec_runner.exit_code(::RSpec.world.reporter.failed_examples.none?)
         end
 
         def finish
