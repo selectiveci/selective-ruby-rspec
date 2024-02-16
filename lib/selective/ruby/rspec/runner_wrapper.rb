@@ -75,7 +75,13 @@ module Selective
         end
 
         def exit_status
-          ::RSpec.world.reporter.failed_examples.any? ? 1 : 0
+          if Gem::Version.new(::RSpec::Core::Version::STRING) >= Gem::Version.new("3.9")
+            rspec_runner.exit_code(::RSpec.world.reporter.failed_examples.none?)
+          else
+            return ::RSpec.world.reporter.exit_early(rspec_runner.configuration.failure_exit_code) if ::RSpec.world.wants_to_quit
+
+            ::RSpec.world.reporter.failed_examples.any? ? 1 : 0
+          end
         end
 
         def finish
