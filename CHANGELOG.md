@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.1.8] - 2024-04-27
+
+- Add instrumentation for before/after all hooks
+
 ## [0.1.7] - 2024-02-07
 
 - Fix retry when connection lost
