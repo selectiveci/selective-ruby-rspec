@@ -22,4 +22,5 @@ tasks:
     use: [install-dependencies]
     env: 
       SELECTIVE_API_KEY: ${{ vaults.selective.secrets.selective-ruby-rspec-api-key }}
+    parallel: 4
     run: bundle exec selective rspec
