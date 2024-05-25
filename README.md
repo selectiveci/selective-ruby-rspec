@@ -41,6 +41,12 @@ If your CI provider is not listed, you can [set the required environment variabl
       runner-id: ${{ matrix.ci_node_index }}
 ```
 
+### Mint
+
+[View a full/working example](https://github.com/selectiveci/selective-ruby-rspec/blob/main/.mint/push.yml)
+
+[Create a secret](https://www.rwx.com/docs/mint/secrets) with your API key (`SELECTIVE_API_KEY`). Mint does not require any additional setup.
+
 ### CircleCI
 
 [View a full/working example](https://github.com/selectiveci/selective-ruby-rspec/blob/main/.circleci/config.yml)
