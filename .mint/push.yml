@@ -8,7 +8,7 @@ tasks:
   - key: code
     call: mint/git-clone 1.2.4
     with:
-      repository: https:://github.com/selectiveci/selective-ruby-rspec.git
+      repository: https://github.com/selectiveci/selective-ruby-rspec.git
       ref: ${{ init.commit-sha }}
       github-access-token: ${{ github.token }}
   - key: ruby
