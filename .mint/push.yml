@@ -1,0 +1,7 @@
+on:
+  github:
+    push:
+
+tasks:
+  - key: hello-world
+    run: echo hello world
