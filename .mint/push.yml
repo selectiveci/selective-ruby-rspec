@@ -1,0 +1,25 @@
+on:
+  github:
+    push:
+      init:
+        commit-sha: ${{ event.git.sha }}
+
+tasks:
+  - key: code
+    call: mint/git-clone 1.2.4
+    with:
+      repository: https:://github.com/selectiveci/selective-ruby-rspec.git
+      ref: ${{ init.commit-sha }}
+      github-access-token: ${{ github.token }}
+  - key: ruby
+    call: mint/install-ruby 1.0.9
+    with:
+      ruby-version: 3.2.2
+  - key: install-dependencies
+    use: [code, ruby]
+    run: bundle install
+  - key: run-tests
+    use: [install-dependencies]
+    env: 
+      SELECTIVE_API_KEY: ${{ vaults.selective.secrets.selective-ruby-rspec-api-key }}
+    run: bundle exec selective rspec
