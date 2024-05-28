@@ -33,9 +33,10 @@ module Selective
         def manifest
           output = nil
           Tempfile.create("selective-rspec-dry-run") do |f|
-            quoted_paths = config.options[:files_or_directories_to_run].map { |path| "'#{path}'" }.join(" ")
-            output = `bundle exec selective exec rspec #{quoted_paths} --format=json --out=#{f.path} --dry-run`
-            JSON.parse(f.read).tap do |content|
+            # quoted_paths = config.options[:files_or_directories_to_run].map { |path| "'#{path}'" }.join(" ")
+            puts `pwd`
+            output = File.read("dry-run.json")
+            JSON.parse(output).tap do |content|
               if content["examples"].empty?
                 message = content["messages"]&.first
                 raise_test_manifest_error(message || "No examples found")
