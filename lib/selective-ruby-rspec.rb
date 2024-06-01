@@ -2,6 +2,7 @@
 
 require "zeitwerk"
 require "rspec/core"
+require "benchmark"
 require "#{__dir__}/selective/ruby/rspec/version"
 
 loader = Zeitwerk::Loader.for_gem(warn_on_extra_files: false)

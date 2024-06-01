@@ -1,5 +1,3 @@
-require 'benchmark'
-
 module Selective
   module Ruby
     module RSpec

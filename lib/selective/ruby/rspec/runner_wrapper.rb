@@ -31,10 +31,11 @@ module Selective
         end
 
         def manifest
-          output = nil
           Tempfile.create("selective-rspec-dry-run") do |f|
             quoted_paths = config.options[:files_or_directories_to_run].map { |path| "'#{path}'" }.join(" ")
-            output = `bundle exec selective exec rspec #{quoted_paths} --format=json --out=#{f.path} --dry-run`
+            Benchmark.measure { `bundle exec selective exec rspec #{quoted_paths} --format=json --out=#{f.path} --dry-run` }.tap do |time|
+              Selective::Ruby::Core::Controller.report_at_finish[:seconds_in_dry_run] = time.real
+            end
             JSON.parse(f.read).tap do |content|
               if content["examples"].empty?
                 message = content["messages"]&.first
