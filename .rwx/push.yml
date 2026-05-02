@@ -4,23 +4,27 @@ on:
       init:
         commit-sha: ${{ event.git.sha }}
 
+base:
+  image: ubuntu:24.04
+  config: rwx/base 1.0.2
+
 tasks:
   - key: code
-    call: mint/git-clone 1.2.4
+    call: git/clone 2.0.7
     with:
       repository: https://github.com/selectiveci/selective-ruby-rspec.git
       ref: ${{ init.commit-sha }}
-      github-access-token: ${{ github.token }}
+      github-token: ${{ github.token }}
   - key: ruby
-    call: mint/install-ruby 1.0.9
+    call: ruby/install 1.2.27
     with:
-      ruby-version: 3.2.2
+      ruby-version: 4.0.3
   - key: install-dependencies
     use: [code, ruby]
     run: bundle install
   - key: run-tests
     use: [install-dependencies]
-    env: 
+    env:
       SELECTIVE_API_KEY: ${{ vaults.selective.secrets.selective-ruby-rspec-api-key }}
     parallel: 4
     run: bundle exec selective rspec
