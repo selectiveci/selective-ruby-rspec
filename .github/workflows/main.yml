@@ -18,12 +18,12 @@ jobs:
         ci_node_index: [0, 1, 2, 3]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: "3.3"
+          ruby-version: "4.0"
           bundler-cache: true
 
       - name: Setup Selective
@@ -37,7 +37,7 @@ jobs:
 
       - name: Store logs
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v7
         with:
-          name: logs
+          name: logs-${{ matrix.ci_node_index }}
           path: ./log/*.log
