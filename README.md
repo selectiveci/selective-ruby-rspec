@@ -2,8 +2,6 @@
 
 Selective is an intelligent test runner that shortens the feedback cycle on CI. Tests are evenly distributed across parallel runners by a queue-based system. When available, the PR changeset is used to intelligently order tests such that those likely to fail are run first. Results are streamed to a Dashboard where the combined results from all parallel runners/nodes can be viewed in real time.
 
-Selective is currently in Alpha. If you'd like to try it out, please email alpha@selecive.ci.
-
 ## Basic Setup
 
 Selective is easy to set up in your CI environment and requires minimal configuration changes.
@@ -79,7 +77,10 @@ Selective supports all CI providers. If your provider is not in the list above, 
 | SELECTIVE_RUN_ATTEMPT   | Yes       | A unique value for each rerun of a particular run/commit started from the CI provider.                                   |
 | SELECTIVE_RUNNER_ID     | Yes       | A unique id for each runner in CI that stays consistent between runs and reruns. Example: the index of the runner.       |
 | SELECTIVE_BRANCH        | Yes       | Working branch for the commit                                                                                            |
-| SELECTIVE_SHA           | Yes       | Commit SHA                                                                                                               |
+| SELECTIVE_SHA           | Yes       | Commit SHA (head of the build)                                                                                           |
+| SELECTIVE_BASE_SHA      | No        | Base commit SHA the head is being compared against. When unset, the server falls back to comparing against `SELECTIVE_TARGET_BRANCH`, or head-only if neither is provided. |
+| SELECTIVE_GIT_REPO      | Yes       | `owner/repo` slug for the repository. Used to look up the GitHub App installation for billing.                           |
+| SELECTIVE_GIT_PROVIDER  | Yes       | Git host: `github`, `gitlab`, or `bitbucket`.                                                                            |
 | SELECTIVE_TARGET_BRANCH | No        | The target branch for a Pull Request or the default branch e.g. main                                                     |
 | SELECTIVE_PR_TITLE      | No        | The PR Title from GitHub if available at CI provider                                                                     |
 | SELECTIVE_ACTOR         | No        | The GitHub user/committer                                                                                                |
