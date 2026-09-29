@@ -123,7 +123,14 @@ module Selective
 
           def run(*args)
             @exception = nil
-            super
+            # Records the files this example executes when the server has
+            # asked for a test map; a plain pass-through otherwise (and on
+            # older cores that predate test maps).
+            if ::Selective::Ruby::Core.const_defined?(:TestMap)
+              ::Selective::Ruby::Core::TestMap.around(id) { super(*args) }
+            else
+              super
+            end
           end
         end
 
