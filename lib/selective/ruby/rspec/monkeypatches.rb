@@ -38,6 +38,13 @@ module Selective
             super
           end
 
+          def example_started(example)
+            if example.execution_result.started_at
+              [@examples, @failed_examples, @pending_examples].each { |list| list.delete(example) }
+            end
+            super
+          end
+
           def register_listener(listener, *notifications)
             # Prevent double registration of listeners with
             # the same output path.
