@@ -6,6 +6,8 @@ module Selective
 
         def initialize(...); end
 
+        def output; end
+
         def self.runner_wrapper=(runner_wrapper)
           @runner_wrapper = runner_wrapper
         end
