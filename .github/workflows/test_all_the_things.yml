@@ -1,12 +1,19 @@
 name: Multi Ruby/RSpec Matrix
 
 on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+
   workflow_dispatch:
 
 jobs:
   multi-ruby-rspec:
     runs-on: ubuntu-latest
-    name: Ruby ${{ matrix.ruby }} - RSpec ${{ matrix.gemfiles }}
+    name: Ruby ${{ matrix.ruby }} - RSpec ${{ matrix.rspec }}
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
       fail-fast: false
       matrix:
@@ -17,19 +24,25 @@ jobs:
           - "3.2"
           - "3.3"
           - "3.4"
-          - "4.0"
-          - "head"
-        gemfiles:
-          - gemfiles/rspec_3.8.gemfile
-          - gemfiles/rspec_3.9.gemfile
-          - gemfiles/rspec_3.10.gemfile
-          - gemfiles/rspec_3.11.gemfile
-          - gemfiles/rspec_3.12.gemfile
-          - gemfiles/rspec_3.13.gemfile
-        runners: [1, 2]
+          - "4.0.7"
+        rspec:
+          - "3.8"
+          - "3.9"
+          - "3.10"
+          - "3.11"
+          - "3.12"
+          - "3.13"
+        experimental: [false]
+        include:
+          - { ruby: "3.0", rspec: "4.0", experimental: true }
+          - { ruby: "3.1", rspec: "4.0", experimental: true }
+          - { ruby: "3.2", rspec: "4.0", experimental: true }
+          - { ruby: "3.3", rspec: "4.0", experimental: true }
+          - { ruby: "3.4", rspec: "4.0", experimental: true }
+          - { ruby: "4.0.7", rspec: "4.0", experimental: true }
 
     env:
-      BUNDLE_GEMFILE: ${{ matrix.gemfiles }}
+      BUNDLE_GEMFILE: gemfiles/rspec_${{ matrix.rspec }}.gemfile
 
     steps:
       - uses: actions/checkout@v6
@@ -44,9 +57,12 @@ jobs:
         uses: selectiveci/setup-selective@v1
         with:
           api-key: ${{ secrets.SELECTIVE_API_KEY }}
-          runner-id: ${{ matrix.runners }}
+          runner-id: "0"
 
-      - name: Run the default task
+      - name: Run the specs
         env:
-          SELECTIVE_RUN_ID: ${{ github.run_id }}-${{ matrix.ruby }}-${{ matrix.gemfiles }}
-        run: bundle exec selective rspec
+          SELECTIVE_RUN_ID: ${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.ruby }}-${{ matrix.rspec }}
+        run: bundle exec selective rspec | tee rspec-output.log
+
+      - name: Fail if no examples ran
+        run: grep -E "^[1-9][0-9]* examples?, " rspec-output.log
