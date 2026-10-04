@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.1.10] - 2026-10-03
+
+- Fix a crash at finish when an example failed and then passed on the same runner; the last attempt now replaces earlier ones in the summary and exit status
+
 ## [0.1.9] - 2026-09-29
 
 - Trace each example for test maps when the server asks; a pass-through otherwise and with cores older than 0.2.10

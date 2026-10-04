@@ -3,6 +3,12 @@
 require "open3"
 
 RSpec.describe Selective::Ruby::RSpec::Monkeypatches::Reporter do
+  before do
+    if Gem::Version.new(::RSpec::Core::Version::STRING) < Gem::Version.new("3.10")
+      skip "rspec-core < 3.10 raises on a second run_test_cases in one process: Formatter has no #output"
+    end
+  end
+
   def run_twice(outcomes)
     Open3.capture2e(
       {"RERUN_OUTCOMES" => outcomes},
