@@ -6,3 +6,7 @@ RSPEC_VERSIONS.each do |version|
     gem "rspec", "~> #{version}.0"
   end
 end
+
+appraise "rspec-4.0" do
+  gem "rspec", "~> 4.0.0.beta1"
+end
