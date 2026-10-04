@@ -39,7 +39,9 @@ module Selective
           end
 
           def example_started(example)
-            [@examples, @failed_examples, @pending_examples].each { |list| list.delete(example) }
+            if example.execution_result.started_at
+              [@examples, @failed_examples, @pending_examples].each { |list| list.delete(example) }
+            end
             super
           end
 
