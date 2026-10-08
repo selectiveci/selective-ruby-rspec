@@ -22,5 +22,5 @@ gem "simplecov", require: false, group: :test
 if Dir.exist?(selective_ruby_core_path = "../selective-ruby-core")
   gem "selective-ruby-core", path: selective_ruby_core_path
 else
-  gem "selective-ruby-core", git: "https://#{ENV["CLONE_PAT"]}:@github.com/selectiveci/selective-ruby-core.git"
+  gem "selective-ruby-core", git: "https://#{ENV["CLONE_PAT"]}:@github.com/selectiveci/selective-ruby-core.git", branch: "main"
 end
