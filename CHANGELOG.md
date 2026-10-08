@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [0.1.11] - 2026-10-08
+
 - **Breaking:** require Ruby 2.7 or newer (was 2.6); the CI matrix covers Ruby 2.7 through 4.0.7
 - Fix a crash on the second batch of tests with rspec-core 3.8/3.9 (`undefined method 'output'` for the Selective formatter)
 - Run the rspec-core 3.8-3.13 matrix on every pull request, plus a non-blocking rspec 4.0.0.beta1 job
