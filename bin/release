@@ -1,10 +1,14 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Define the vault ID for DRY purposes
 VAULT_ID="hehpkyvswnpef4ywyqwi3dbclq"
 
+# The vault lives in the hintmedia 1Password account; pin it so op doesn't
+# fall back to whichever account was signed into most recently.
+export OP_ACCOUNT="${OP_ACCOUNT:-hintmedia.1password.com}"
+
 # Retrieve the RubyGems API key from 1Password and export it
-export GEM_HOST_API_KEY=$(op item get RubyGems --field label=api_key --vault $VAULT_ID)
+export GEM_HOST_API_KEY=$(op item get RubyGems --field label=api_key --vault $VAULT_ID --reveal)
 
 # Check if the GEM_HOST_API_KEY was successfully retrieved and is not empty
 if [ -z "$GEM_HOST_API_KEY" ]; then
