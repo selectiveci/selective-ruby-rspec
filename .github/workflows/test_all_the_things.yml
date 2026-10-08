@@ -60,6 +60,7 @@ jobs:
           runner-id: "0"
 
       - name: Run the specs
+        shell: bash
         env:
           SELECTIVE_RUN_ID: ${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.ruby }}-${{ matrix.rspec }}
         run: bundle exec selective rspec | tee rspec-output.log
