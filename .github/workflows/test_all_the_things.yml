@@ -8,6 +8,11 @@ on:
   pull_request:
 
   workflow_dispatch:
+    inputs:
+      without_selective:
+        description: Run plain rspec, as a fork PR without secrets would
+        type: boolean
+        default: false
 
 jobs:
   multi-ruby-rspec:
@@ -43,6 +48,7 @@ jobs:
 
     env:
       BUNDLE_GEMFILE: gemfiles/rspec_${{ matrix.rspec }}.gemfile
+      WITHOUT_SELECTIVE: ${{ inputs.without_selective || secrets.SELECTIVE_API_KEY == '' }}
 
     steps:
       - uses: actions/checkout@v6
@@ -54,6 +60,7 @@ jobs:
           bundler-cache: true
 
       - name: Setup Selective
+        if: env.WITHOUT_SELECTIVE != 'true'
         uses: selectiveci/setup-selective@v1
         with:
           api-key: ${{ secrets.SELECTIVE_API_KEY }}
@@ -63,7 +70,20 @@ jobs:
         shell: bash
         env:
           SELECTIVE_RUN_ID: ${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.ruby }}-${{ matrix.rspec }}
-        run: bundle exec selective rspec | tee rspec-output.log
+        run: |
+          if [[ "$WITHOUT_SELECTIVE" == "true" ]]; then
+            env -u SELECTIVE_API_KEY bundle exec rspec --exclude-pattern spec/hooks_spec.rb 2>&1 | tee rspec-output.log
+            bundle exec rspec --dry-run --exclude-pattern spec/hooks_spec.rb > rspec-dry-run.log 2>&1
+          else
+            bundle exec selective rspec 2>&1 | tee rspec-output.log
+            bundle exec rspec --dry-run > rspec-dry-run.log 2>&1
+          fi
 
-      - name: Fail if no examples ran
-        run: grep -E "^[1-9][0-9]* examples?, " rspec-output.log
+      - name: Fail unless the whole suite ran
+        shell: bash
+        run: |
+          count() { grep -aoE '^[0-9]+ examples?, ' "$1" | tail -n 1 | grep -oE '^[0-9]+' || true; }
+          ran=$(count rspec-output.log)
+          suite=$(count rspec-dry-run.log)
+          echo "ran ${ran:-no} of a ${suite:-unknown}-example suite"
+          [[ -n "$ran" && -n "$suite" && "$suite" -gt 0 && "$ran" == "$suite" ]]
