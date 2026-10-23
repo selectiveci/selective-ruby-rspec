@@ -16,7 +16,7 @@ on:
 
 jobs:
   multi-ruby-rspec:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: Ruby ${{ matrix.ruby }} - RSpec ${{ matrix.rspec }}
     continue-on-error: ${{ matrix.experimental }}
     strategy:
