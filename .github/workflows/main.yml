@@ -11,7 +11,7 @@ jobs:
   # Prepares Selective's test selection for this commit and asks how many
   # runners the selected tests need, up to the usual 4.
   plan:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: Plan runners
     outputs:
       matrix: ${{ steps.plan.outputs.matrix }}
@@ -26,7 +26,7 @@ jobs:
 
   selective:
     needs: [plan]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: Selective (runner ${{ matrix.runner }})
     strategy:
       fail-fast: false
@@ -63,7 +63,7 @@ jobs:
   selective-passed:
     needs: [selective]
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: Selective
     steps:
       - run: test "${{ needs.selective.result }}" = success
