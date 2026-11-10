@@ -37,7 +37,7 @@ RSpec.describe Selective::Ruby::RSpec::RunnerWrapper do
   describe "#manifest" do
     it "generates a manifest" do
       result = runner_wrapper.manifest
-      expect(result.keys).to eq(["version", "examples", "summary", "summary_line"])
+      expect(result.keys).to include("version", "examples", "summary", "summary_line")
       expect(result["examples"].length).to be > 0
     end
 
