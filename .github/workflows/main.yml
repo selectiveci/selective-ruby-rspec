@@ -8,14 +8,30 @@ on:
   pull_request:
 
 jobs:
-  selective:
+  # Prepares Selective's test selection for this commit and asks how many
+  # runners the selected tests need, up to the usual 4.
+  plan:
     runs-on: ubuntu-latest
-    name: Selective
+    name: Plan runners
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+
+    steps:
+      - name: Plan runners
+        id: plan
+        uses: selectiveci/setup-selective@feat/warmup-and-plan
+        with:
+          api-key: ${{ secrets.SELECTIVE_API_KEY }}
+          max-runners: 4
+
+  selective:
+    needs: [plan]
+    runs-on: ubuntu-latest
+    name: Selective (runner ${{ matrix.runner }})
     strategy:
       fail-fast: false
       matrix:
-        ci_node_total: [4]
-        ci_node_index: [0, 1, 2, 3]
+        runner: ${{ fromJSON(needs.plan.outputs.matrix) }}
 
     steps:
       - uses: actions/checkout@v6
@@ -27,10 +43,10 @@ jobs:
           bundler-cache: true
 
       - name: Setup Selective
-        uses: selectiveci/setup-selective@v1
+        uses: selectiveci/setup-selective@feat/warmup-and-plan
         with:
           api-key: ${{ secrets.SELECTIVE_API_KEY }}
-          runner-id: ${{ matrix.ci_node_index }}
+          runner-id: ${{ matrix.runner }}
 
       - name: Run the default task
         run: bundle exec selective rspec
@@ -39,5 +55,15 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: logs-${{ matrix.ci_node_index }}
+          name: logs-${{ matrix.runner }}
           path: ./log/*.log
+
+  # The number of runners changes from build to build, so branch protection
+  # requires this job rather than each runner.
+  selective-passed:
+    needs: [selective]
+    if: always()
+    runs-on: ubuntu-latest
+    name: Selective
+    steps:
+      - run: test "${{ needs.selective.result }}" = success
