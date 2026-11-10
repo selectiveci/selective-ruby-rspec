@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Plan runners
         id: plan
-        uses: selectiveci/setup-selective@feat/warmup-and-plan
+        uses: selectiveci/setup-selective/plan@v1.2.0
         with:
           api-key: ${{ secrets.SELECTIVE_API_KEY }}
           max-runners: 4
@@ -43,7 +43,7 @@ jobs:
           bundler-cache: true
 
       - name: Setup Selective
-        uses: selectiveci/setup-selective@feat/warmup-and-plan
+        uses: selectiveci/setup-selective@v1.2.0
         with:
           api-key: ${{ secrets.SELECTIVE_API_KEY }}
           runner-id: ${{ matrix.runner }}
