@@ -49,6 +49,9 @@ jobs:
     env:
       BUNDLE_GEMFILE: gemfiles/rspec_${{ matrix.rspec }}.gemfile
       WITHOUT_SELECTIVE: ${{ inputs.without_selective || secrets.SELECTIVE_API_KEY == '' }}
+      # Every Ruby and RSpec version runs every test: the matrix is a
+      # compatibility check, so it never records a test map or selects.
+      SELECTIVE_TEST_MAP_DISABLE: "1"
 
     steps:
       - uses: actions/checkout@v6
