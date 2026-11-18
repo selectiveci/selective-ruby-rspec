@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.1.12] - 2026-11-18
+
+- Allow zeitwerk 2.7 and 2.8. The `~> 2.6.12` pin made Rails apps on current zeitwerk downgrade their autoloader to install Selective.
+
 ## [0.1.11] - 2026-10-08
 
 - **Breaking:** require Ruby 2.7 or newer (was 2.6); the CI matrix covers Ruby 2.7 through 4.0.7
