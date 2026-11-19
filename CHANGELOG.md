@@ -1,5 +1,8 @@
 ## [Unreleased]
 
+- Add `--preserve-all-hooks`: run `before(:all)`/`after(:all)` as RSpec does, once around each batch's examples of a group, instead of rewriting them into `before(:each)`/`after(:each)`. Use it for suites whose `before(:each)` hooks depend on `let_it_be` or `before_all` state.
+- Reset RSpec's per-group example memoization before each batch. A group whose first batch held none of its examples kept that answer and skipped its `before(:all)`/`after(:all)` in later batches.
+
 ## [0.1.12] - 2026-11-18
 
 - Allow zeitwerk 2.7 and 2.8. The `~> 2.6.12` pin made Rails apps on current zeitwerk downgrade their autoloader to install Selective.

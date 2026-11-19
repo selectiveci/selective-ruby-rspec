@@ -49,7 +49,9 @@ module Selective
         def run_test_cases(test_case_ids)
           ensure_test_phase
           configure(test_case_ids)
-          rspec_runner.run_specs(optimize_test_filtering(test_case_ids).to_a)
+          groups = optimize_test_filtering(test_case_ids).to_a
+          reset_group_memoization(groups)
+          rspec_runner.run_specs(groups)
           if connection_lost
             self.connection_lost = false
             raise Selective::Ruby::Core::ConnectionLostError
@@ -108,7 +110,7 @@ module Selective
         private
 
         def parse_args(args)
-          supported_wrapper_args = %w[--require-each-hooks]
+          supported_wrapper_args = %w[--require-each-hooks --preserve-all-hooks]
           wrapper_args, rspec_args = args.partition do |arg|
             supported_wrapper_args.any? do |p|
               arg.start_with?(p)
@@ -188,6 +190,13 @@ module Selective
             end
             set << example.example_group.parent_groups.last
           end
+        end
+
+        # RSpec memoizes descendant_filtered_examples per group and decides from it
+        # whether to run before(:all)/after(:all); a stale value from an earlier
+        # batch skips a group's context hooks.
+        def reset_group_memoization(top_level_groups)
+          top_level_groups.each { |group| group.descendants.each(&:reset_memoized) }
         end
 
         def ensure_test_phase
