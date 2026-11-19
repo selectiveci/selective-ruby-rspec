@@ -147,12 +147,23 @@ module Selective
 
         def failure_formatter(example)
           presenter = ::RSpec::Core::Formatters::ExceptionPresenter::Factory.new(example).build
+          message_lines = presenter.message_lines
+          message_lines = multiple_exception_lines(presenter) if message_lines.empty?
 
           {
-            failure_message_lines: presenter.message_lines,
+            failure_message_lines: message_lines,
             failure_formatted_backtrace: presenter.formatted_backtrace
             # failure_full_backtrace: example.exception.backtrace
           }
+        end
+
+        # RSpec keeps the detail of a MultipleExceptionError (aggregate_failures,
+        # or an example and a hook both failing) only in its fully formatted output.
+        def multiple_exception_lines(presenter)
+          lines = presenter.fully_formatted_lines(nil, ::RSpec::Core::Notifications::NullColorizer).map(&:to_s)
+          lines = lines.drop_while { |line| line.strip.empty? }
+          lines = lines.drop(1) if presenter.description && lines.first&.strip == presenter.description.to_s.strip
+          lines.map { |line| line.sub(/\A  /, "") }
         end
 
         def apply_rspec_configuration
