@@ -217,7 +217,7 @@ module Selective
           # is included.
           if config[:require_each_hooks]
             ::RSpec::Core::ExampleGroup.extend(RequireEachHooks)
-          else
+          elsif !config[:preserve_all_hooks]
             ::RSpec::Core::ExampleGroup.extend(Hooks)
           end
 
