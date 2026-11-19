@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+- Report the failure detail for `aggregate_failures` examples and for examples whose `after` hook also fails. Both arrived with an empty message and backtrace.
+
 ## [0.1.12] - 2026-11-18
 
 - Allow zeitwerk 2.7 and 2.8. The `~> 2.6.12` pin made Rails apps on current zeitwerk downgrade their autoloader to install Selective.
