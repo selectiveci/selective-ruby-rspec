@@ -92,6 +92,31 @@ RSpec.describe Selective::Ruby::RSpec::RunnerWrapper do
       meta_example.execution_result.exception = StandardError.new("error")
       expect(runner_wrapper.failure_formatter(meta_example).keys).to include(:failure_message_lines, :failure_formatted_backtrace)
     end
+
+    it "reports every failure from aggregate_failures" do
+      begin
+        aggregate_failures do
+          expect(1).to eq(2)
+          expect(3).to eq(4)
+        end
+      rescue RSpec::Expectations::MultipleExpectationsNotMetError => error
+        meta_example.execution_result.exception = error
+      end
+
+      lines = runner_wrapper.failure_formatter(meta_example)[:failure_message_lines]
+      expect(lines.first).to start_with("Got 2 failures")
+      expect(lines.join("\n")).to include("expected: 2", "expected: 4")
+      expect(lines).not_to include(meta_example.full_description)
+    end
+
+    it "reports both an example failure and a hook error" do
+      example_error = StandardError.new("example failed").tap { |e| e.set_backtrace(["spec/a_spec.rb:1"]) }
+      hook_error = RuntimeError.new("after hook boom").tap { |e| e.set_backtrace(["spec/a_spec.rb:2"]) }
+      meta_example.execution_result.exception = RSpec::Core::MultipleExceptionError.new(example_error, hook_error)
+
+      text = runner_wrapper.failure_formatter(meta_example)[:failure_message_lines].join("\n")
+      expect(text).to include("example failed", "after hook boom")
+    end
   end
 
   describe '#framework' do
