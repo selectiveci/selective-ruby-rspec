@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [0.1.13] - 2026-11-19
+
 - Report the failure detail for `aggregate_failures` examples and for examples whose `after` hook also fails. Both arrived with an empty message and backtrace.
 - Add `--preserve-all-hooks`: run `before(:all)`/`after(:all)` as RSpec does, once around each batch's examples of a group, instead of rewriting them into `before(:each)`/`after(:each)`. Use it for suites whose `before(:each)` hooks depend on `let_it_be` or `before_all` state.
 - Reset RSpec's per-group example memoization before each batch. A group whose first batch held none of its examples kept that answer and skipped its `before(:all)`/`after(:all)` in later batches.
