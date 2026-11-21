@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+- Run with `--workers N` or `SELECTIVE_WORKERS=N` (selective-ruby-core 0.4.0 or newer). In a Rails app each worker gets its own test database.
+- Report whether the command named spec paths narrower than the whole suite, so a parallel_tests or turbo_tests process given a slice is refused instead of offering Selective a partial manifest.
+- Exit as `rspec` does when the suite fails to load, with the load errors shown. The runner used to connect anyway and crash with "undefined method `example_group' for nil" once tests were assigned.
+- List the suite for the manifest outside any worker's environment, so coverage tools don't count the listing as a worker.
+
 ## [0.1.13] - 2026-11-19
 
 - Report the failure detail for `aggregate_failures` examples and for examples whose `after` hook also fails. Both arrived with an empty message and backtrace.

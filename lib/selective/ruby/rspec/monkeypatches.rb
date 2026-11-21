@@ -19,6 +19,22 @@ module Selective
           end
         end
 
+        # Messages before the first tests run, such as errors loading the
+        # suite, are shown as `rspec` shows them.
+        [BaseTextFormatter, DocumentationFormatter].each do |m|
+          m.define_method(:message) do |notification|
+            super(notification) unless Selective::Ruby::RSpec::Monkeypatches.test_phase?
+          end
+        end
+
+        class << self
+          attr_writer :test_phase
+
+          def test_phase?
+            @test_phase == true
+          end
+        end
+
         module Reporter
           def finish
             return if Selective::Ruby::Core::Controller.suppress_reporting?
