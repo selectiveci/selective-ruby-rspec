@@ -1,4 +1,5 @@
 require "tempfile"
+require "open3"
 require "json"
 
 module Selective
@@ -20,6 +21,9 @@ module Selective
           apply_rspec_configuration
 
           @config = ::RSpec::Core::ConfigurationOptions.new(rspec_args)
+          @targeted = config.options[:files_or_directories_to_run].any? do |path|
+            path.to_s.sub(%r{\A\./}, "").chomp("/") != DEFAULT_SPEC_PATH.sub(%r{\A\./}, "")
+          end
           if config.options[:files_or_directories_to_run].empty?
             config.options[:files_or_directories_to_run] = [DEFAULT_SPEC_PATH]
           end
@@ -28,13 +32,14 @@ module Selective
 
           @rspec_runner = ::RSpec::Core::Runner.new(@config)
           @rspec_runner.setup($stderr, $stdout)
+          exit_on_load_errors
         end
 
         def manifest
           output = nil
           Tempfile.create("selective-rspec-dry-run") do |f|
             quoted_paths = config.options[:files_or_directories_to_run].map { |path| "'#{path}'" }.join(" ")
-            output = `bundle exec selective exec rspec #{quoted_paths} --format=json --out=#{f.path} --dry-run`
+            output, _status = Open3.capture2(dry_run_env, "bundle exec selective exec rspec #{quoted_paths} --format=json --out=#{f.path} --dry-run")
             JSON.parse(f.read).tap do |content|
               if content["examples"].empty?
                 message = content["messages"]&.first
@@ -91,6 +96,11 @@ module Selective
           ::RSpec.world.reporter.finish
         end
 
+        # Whether the command named paths narrower than the whole suite.
+        def targeted?
+          @targeted
+        end
+
         def framework
           RunnerWrapper::FRAMEWORK
         end
@@ -108,6 +118,21 @@ module Selective
         end
 
         private
+
+        # The dry run lists the suite; it isn't one of the workers.
+        def dry_run_env
+          workers = Selective::Ruby::Core::Workers if defined?(Selective::Ruby::Core::Workers)
+          workers.respond_to?(:non_worker_env) ? workers.non_worker_env : {}
+        end
+
+        # A suite that failed to load would accept tests it cannot run, so stop
+        # here as `rspec` does, with the load errors reported.
+        def exit_on_load_errors
+          return unless ::RSpec.world.wants_to_quit
+
+          code = rspec_runner.respond_to?(:exit_code) ? rspec_runner.exit_code : rspec_runner.configuration.failure_exit_code
+          exit(::RSpec.world.reporter.report(0) { code })
+        end
 
         def parse_args(args)
           supported_wrapper_args = %w[--require-each-hooks --preserve-all-hooks]
@@ -213,6 +238,7 @@ module Selective
         def ensure_test_phase
           @test_phase_initialized ||= begin
             ::RSpec.world.reporter.send(:start, nil)
+            Selective::Ruby::RSpec::Monkeypatches.test_phase = true
             Selective::Ruby::Core::Controller.suppress_reporting!
             apply_formatter
           end
