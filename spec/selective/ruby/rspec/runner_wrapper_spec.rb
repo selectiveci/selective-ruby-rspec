@@ -34,7 +34,37 @@ RSpec.describe Selective::Ruby::RSpec::RunnerWrapper do
     end
   end
 
+  describe "#targeted?" do
+    {
+      [] => false,
+      ["spec"] => false,
+      ["./spec/"] => false,
+      ["--seed", "1", "spec"] => false,
+      ["spec/models"] => true,
+      ["spec", "spec/a_spec.rb"] => true
+    }.each do |given, targeted|
+      it "is #{targeted} for #{given.inspect}" do
+        expect(dirty_dirty_unprivate_class(described_class).new(given, example_callback).targeted?).to be(targeted)
+      end
+    end
+  end
+
+  describe "loading the suite" do
+    it "exits as rspec does when the suite fails to load" do
+      wrapper = runner_wrapper
+      allow(::RSpec.world).to receive(:wants_to_quit).and_return(true)
+      allow(wrapper.rspec_runner).to receive(:exit_code).and_return(1)
+      allow(::RSpec.world.reporter).to receive(:exit_early).with(1).and_return(1)
+
+      expect { wrapper.send(:exit_on_load_errors) }.to raise_error(SystemExit) { |e| expect(e.status).to eq(1) }
+    end
+  end
+
   describe "#manifest" do
+    it "lists the suite outside any worker's environment" do
+      expect(runner_wrapper.send(:dry_run_env)).to include("TEST_ENV_NUMBER" => nil, "PARALLEL_TEST_GROUPS" => nil, "SIMPLECOV_RUN_ID" => nil)
+    end
+
     it "generates a manifest" do
       result = runner_wrapper.manifest
       expect(result.keys).to include("version", "examples", "summary", "summary_line")
