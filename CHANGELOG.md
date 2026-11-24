@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [Unreleased]
+
+- With `--preserve-all-hooks`, report time spent in `before(:all)`/`after(:all)` hooks (including `let_it_be` and `before_all`) in `report_at_finish`: total, time past each group's first run, groups with context hooks and the runs. A group whose examples arrive in several batches runs its context hooks once per batch, so the rerun time is the cost of splitting it.
+
 ## [0.1.13] - 2026-11-19
 
 - Report the failure detail for `aggregate_failures` examples and for examples whose `after` hook also fails. Both arrived with an empty message and backtrace.
