@@ -16,6 +16,7 @@ module Selective
         def initialize(args, example_callback)
           @example_callback = example_callback
           rspec_args, wrapper_config_hash = parse_args(args)
+          @preserve_all_hooks = wrapper_config_hash[:preserve_all_hooks] == true
           Selective::Ruby::RSpec::Monkeypatches.apply(wrapper_config_hash)
           apply_rspec_configuration
 
@@ -52,6 +53,7 @@ module Selective
           groups = optimize_test_filtering(test_case_ids).to_a
           reset_group_memoization(groups)
           rspec_runner.run_specs(groups)
+          Selective::Ruby::Core::Controller.report_at_finish.merge!(ContextHookTiming.report) if @preserve_all_hooks
           if connection_lost
             self.connection_lost = false
             raise Selective::Ruby::Core::ConnectionLostError

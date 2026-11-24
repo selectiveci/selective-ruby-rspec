@@ -221,6 +221,7 @@ module Selective
             ::RSpec::Core::ExampleGroup.extend(Hooks)
           end
 
+          ::RSpec::Core::ExampleGroup.singleton_class.prepend(ContextHookTiming::GroupMethods) if config[:preserve_all_hooks]
           ::RSpec.singleton_class.prepend(RSpec)
           ::RSpec::Core::Reporter.prepend(Reporter)
           ::RSpec::Core::Configuration.prepend(Configuration)
