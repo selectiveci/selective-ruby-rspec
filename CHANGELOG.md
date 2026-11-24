@@ -2,6 +2,7 @@
 
 - Build the test manifest from the examples this process already loaded instead of booting the suite a second time for a `--dry-run`. On a large suite this takes the manifest from most of a minute to well under a second.
 - The manifest now honours `--tag` and `--exclude-pattern` given on the command line; the dry run only received the paths, so it listed examples those options exclude.
+- With `--preserve-all-hooks`, report time spent in `before(:all)`/`after(:all)` hooks (including `let_it_be` and `before_all`) in `report_at_finish`: total, time past each group's first run, groups with context hooks and the runs. A group whose examples arrive in several batches runs its context hooks once per batch, so the rerun time is the cost of splitting it.
 
 ## [0.1.13] - 2026-11-19
 
