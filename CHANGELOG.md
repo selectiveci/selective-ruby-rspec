@@ -1,4 +1,4 @@
-## [Unreleased]
+## [0.1.14] - 2026-11-24
 
 - Build the test manifest from the examples this process already loaded instead of booting the suite a second time for a `--dry-run`. On a large suite this takes the manifest from most of a minute to well under a second.
 - The manifest now honours `--tag` and `--exclude-pattern` given on the command line; the dry run only received the paths, so it listed examples those options exclude.
