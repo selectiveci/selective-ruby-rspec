@@ -20,6 +20,11 @@ module Selective
         end
 
         module Reporter
+          def notify_non_example_exception(exception, context_description)
+            ::RSpec.world.selective_load_errors << [exception, context_description] unless ::RSpec.world.selective_manifest
+            super
+          end
+
           def finish
             return if Selective::Ruby::Core::Controller.suppress_reporting?
             # This handles the scenario of no tests to run
@@ -101,10 +106,20 @@ module Selective
 
         module World
           attr_accessor :example_map
+          attr_reader :selective_manifest
 
           def initialize(*args)
             super
             @example_map = {}
+          end
+
+          def selective_load_errors
+            @selective_load_errors ||= []
+          end
+
+          def announce_filters
+            @selective_manifest ||= Manifest.capture(self) unless ::RSpec.configuration.dry_run?
+            super
           end
 
           def prepare_example_filtering

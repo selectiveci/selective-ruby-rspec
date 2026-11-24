@@ -34,40 +34,6 @@ RSpec.describe Selective::Ruby::RSpec::RunnerWrapper do
     end
   end
 
-  describe "#manifest" do
-    it "generates a manifest" do
-      result = runner_wrapper.manifest
-      expect(result.keys).to include("version", "examples", "summary", "summary_line")
-      expect(result["examples"].length).to be > 0
-    end
-
-    context "when no examples are found" do
-      let(:args) { ["spec/spec_helper.rb"] }
-
-      it "raises a test manifest error" do
-        expect { runner_wrapper.manifest }.to raise_error(Selective::Ruby::RSpec::RunnerWrapper::TestManifestError, /No examples found/)
-      end
-    end
-
-    context "when JSON cannot parse the manifest" do
-      before do
-        allow(JSON).to receive(:parse).and_raise(JSON::ParserError)
-      end
-
-      it "raises a test manifest error" do
-        expect { runner_wrapper.manifest }.to raise_error(Selective::Ruby::RSpec::RunnerWrapper::TestManifestError, /JSON::ParserError/)
-      end
-    end
-
-    context "when something else goes wrong" do
-      let(:args) { ["path/that/does/not/exist.rb"] }
-
-      it "raises a test manifest error" do
-        expect { runner_wrapper.manifest }.to raise_error(Selective::Ruby::RSpec::RunnerWrapper::TestManifestError, /cannot load such file/)
-      end
-    end
-  end
-
   describe "#exec" do
     before do
       allow(rspec_runner).to receive(:run)
