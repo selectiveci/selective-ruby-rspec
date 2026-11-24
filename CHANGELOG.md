@@ -1,5 +1,8 @@
 ## [Unreleased]
 
+- Build the test manifest from the examples this process already loaded instead of booting the suite a second time for a `--dry-run`. On a large suite this takes the manifest from most of a minute to well under a second.
+- The manifest now honours `--tag` and `--exclude-pattern` given on the command line; the dry run only received the paths, so it listed examples those options exclude.
+
 ## [0.1.13] - 2026-11-19
 
 - Report the failure detail for `aggregate_failures` examples and for examples whose `after` hook also fails. Both arrived with an empty message and backtrace.
