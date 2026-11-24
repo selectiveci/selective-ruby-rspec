@@ -1,6 +1,3 @@
-require "tempfile"
-require "json"
-
 module Selective
   module Ruby
     module RSpec
@@ -31,19 +28,11 @@ module Selective
         end
 
         def manifest
-          output = nil
-          Tempfile.create("selective-rspec-dry-run") do |f|
-            quoted_paths = config.options[:files_or_directories_to_run].map { |path| "'#{path}'" }.join(" ")
-            output = `bundle exec selective exec rspec #{quoted_paths} --format=json --out=#{f.path} --dry-run`
-            JSON.parse(f.read).tap do |content|
-              if content["examples"].empty?
-                message = content["messages"]&.first
-                raise_test_manifest_error(message || "No examples found")
-              end
-            end
-          end
-        rescue JSON::ParserError => e
-          raise_test_manifest_error(e.message)
+          captured = ::RSpec.world.selective_manifest || Manifest.capture(::RSpec.world)
+          raise_test_manifest_error(captured.load_errors.join("\n")) if captured.failed_to_load?
+          raise_test_manifest_error("No examples found") if captured.examples.empty?
+
+          {"examples" => captured.examples}
         end
 
         def run_test_cases(test_case_ids)
